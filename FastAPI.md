@@ -6,11 +6,11 @@
 RESTful API를 쉽게 구축할 수 있게 돕는 것이 가장 큰 장점    
 
 ## RESTful API는
->웹 서비스에서 클라이언트와 서버 간에 데이터를 교환하는 데 사용되는 일반적인 방식   
+> 웹 서비스에서 클라이언트와 서버 간에 데이터를 교환하는 데 사용되는 일반적인 방식   
 FastAPI는 이러한 API를 구축할 때 필요한 많은 기본 설정과 보일러플레이트 코드를 줄여줌   
 
 ## 보일러플레이트 코드(boilerplate code)란
->애플리케이션의 동작과 관련 없이 반복되어 작성되어야 하는 코드 조각들을 말함    
+> 애플리케이션의 동작과 관련 없이 반복되어 작성되어야 하는 코드 조각들을 말함    
 이러한 코드는 대부분의 프로그래밍 작업에서 일반적으로 필요한 기본적인 설정이나 준비 작업을 수행하기 위해 사용됨     
 다른 파이썬 웹 프레임워크인 플라스크와 비교했을 때 플라스크는 간단하고 직관적이지만 기본적으로 '동기(sync)'처리를 기반으로 하고 있음       
 동기 처리는 한 번에 하나의 작업만 처리할 수 있어서 I/O 바운드 작업이 많은 애플리케이션에서는 FastAPI가 제공하는 비동기 처리 방식이 더 효율적일 수 있음      
@@ -176,6 +176,9 @@ uvicorn main:app --reload
 > curl은 Client URL의 약자로, 다양한 프로토콜을 지원하는 명령행 기반의 네트워크 도구    
 > 주로 웹 서버와의 상호작용을 위해 사용되며 HTTP, HTTPS, FTP 등 다양한 프로토콜을 지원함    
 
+***
+***
+
 # 타입 힌트
 > 타입 힌트(type hint)는 프로그래밍에서 변수나 함수의 예상 타입을 명시적으로 표시하는 기술   
 > FastAPI는 파이썬의 타입 힌트를 사용하여 요청을 검증하고, 적절한 데이터가 요청과 응답에 사용되도록 도움    
@@ -266,3 +269,115 @@ def create_item(item : Dict[str, int]):
 > 이러한 타입은 단독으로 사용하거나 typing 모듈의 다양한 기능과 결합하여 더 복잡한 타입 힌트를 만드는 데 사용할 수 있음     
 > 예를 들어 List[Dict[str, Union[int, str]]]은 문자열을 키로 하고 정수 또는 문자열을 값으로 하는 딕셔너리의 리스트를 나타냄     
 > FastAPI는 이러한 타입 힌트를 사용하여 요청에서 받은 데이터의 형식을 검증하고, 응답 데이터를 적절한 형식으로 변환하며 API에 대한 문서를 자동으로 생성함
+
+***
+***
+
+# HTTP 메서드
+> HTTP 메서드는 클라이언트가 서버에게 어떤 동작을 해달라고 요청하는 방식을 정의함   
+> FastAPI는 이러한 메서드를 사용하여 요청의 의도를 명확히 하고, 적절한 엔드포인트에 연결하는 라우팅을 수행함    
+> * GET
+>   > 이 메서드는 서버로부터 정보를 요청할 때 사용함    
+>   > 데이터를 가져오는 read-only 작업에 적합하며, 서버의 상태나 데이터를 변경하지 않음
+>   > 예를 들어 사용자의 프로필 데이터나 게시글 목록을 가져올 때 GET 요청을 사용함
+> * POST
+>   > 서버에 데이터를 전송하여 새로운 리소스를 생성하려고 할 때 POST 메서드를 사용함    
+>   > 예를 들어 새 사용자를 등록하거나 게시글을 작성할 때 사용함    
+>   > POST 요청은 데이터를 서버의 특정 경로에 제출하며, 해당 데이터는 주로 요청 바디에 포함됨   
+> * PUT
+>   > PUT 메서드는 지정된 리소스의 전체 업데이트를 수행함   
+>   > 예를 들어, 사용자의 전체 프로필을 업데이트하는 경우에 PUT 요청을 사용할 수 있음   
+>   > PUT은 리소스가 존재하지 않는 경우 새로 생성할 수도 있지만, 주로 기존 리소스의 완전한 교체를 의미함    
+> * DELETE
+>   > DELETE 메서드는 지정된 리소스를 삭제할 때 사용함  
+>   > 이 요청은 서버에 리소스의 제거를 지시하며, 성공적으로 처리된 경우 리소스에 더 이상 접근할 수 없음     
+>   > 예를 들어, 사용자가 자신의 계정을 삭제하거나 작성한 게시글을 제거하고 싶을 때 DELETE 요청을 사용할 수 있음
+
+> FastAPI를 사용하면 이러한 메서드를 각각의 라우팅 데코레이터(@app.get(), @app.post(), @app.put(), @app.delete() 등)와 함께 사용하여 다양한 HTTP 요청을 처리하는 API를 손쉽게 구성할 수 있음
+
+## FastAPI 코드 작성
+```python
+# main.py
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message" : "Hello, FastAPI"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id : int):
+    return {"item_id" : item_id}
+
+@app.get("/items/")
+def read_items(skip: int=0, limit: int=10):
+    return {"skip" : skip, "limit" : limit}
+
+@app.post("/items")
+def create_item(item: dict):
+    return {"item" : item}
+
+@app.put("/items/{item_id}")
+def update_item(item_id: int, item: dict):
+    return {"item_id": item_id, "update_item":item}
+
+@app.delete("/items/{item_id}")
+def delete_item(item_id: int):
+    return{"message" : f"Item {item_id} has been deleted"}
+```
+
+## curl을 사용한 테스트
+### POST 메서드 테스트
+> 새 아이템을 생성함    
+> 아이템은 JSON 형태로 전달됨   
+> FastAPI에서는 요청바디로부터 데이터를 받기 위해 반드시 Pydantic 모델을 사용해야 하는 것은 아니지만, Pydantic 모델을 사용하는 것을 권장함      
+> POST 메서드는 데이터를 요청 바디에 넣어서 전송하므로 해당 데이터 처리를 위해서는 Pydantic 모델을 고려할 수 있음   
+> 다만 해당 모델을 익히기 전이므로 위 코드는 직접 파이썬의 내장 dict 타입을 사용함      
+> 파이썬의 내장 dict 타입을 직접 사용하면 Pydantic은 요청 바디가 JSON 형식이라는 것만을 기대하고, 그 내용에 대해서는 검증을 수행하지 않음   
+> curl 명령에서 -d 옵션을 사용할 때 Content-Type 헤더를 지정하지 않으면 기본적으로 application/x-www-form-urlencoded로 설정됨   
+> 그래서 이 경우에는 -H "Content-Type: application/json" 헤더를 추가해야 함     
+> 이렇게 하면 curl이 데이터를 JSON으로 보내고 FastAPI가 이를 dict로 변환하여 정상 동작할 수 있음
+```
+curl -X POST "http://127.0.0.1:8000/items" -H "Content-Type: application/json" -d "{\"name\":\"item1\", \"value\":42}"
+```
+
+### PUT 메서드 테스트
+> 아이템 ID가 1인 아이템의 정보를 업데이트함
+```
+curl -X PUT "http://127.0.0.1:8000/items/1" -H "Content-Type: application/json" -d "{\"name\":\"update_item\", \"value\":43}"
+```
+
+### DELETE 메서드 테스트
+> 아이템 ID가 1인 아이템을 삭제함
+```
+curl -X DELETE "http://127.0.0.1:8000/items/1" -H "Content-Type: application/json"
+```
+
+***
+***
+
+# Pydantic
+> FastAPI에서 Pydantic(파이단틱)은 데이터 검증과 데이터 직렬화를 쉽게 만들어줌  
+> 먼저 <u>데이터 검증</u>과 <u>데이터 직렬화</u>가 무엇인지 알아봄  
+
+> * 데이터 검증(data validation)
+>   > 사용자나 다른 시스템이 보내는 데이터가 올바른 형식과 값인지 확인하는 과정     
+>   > 예를 들어, 사용자가 금액을 입력할 때 문자열을 넣으면 이는 올바르지 않은 데이터임      
+>   > 데이터 검증을 통해 이런 잘못된 정보를 사전에 차단할 수 있음       
+> * 데이터 직렬화(data serialization)
+>   > 복잡한 데이터 구조를 바이트나 문자열로 변환해서 다른 시스템과 쉽게 데이터를 교환할 수 있는 형태로 만드는 것       
+>   > 반대 과정을 '역직렬화'라고 하며, 이는 문자열이나 바이트를 원래의 데이터 구조로 되돌리는 것    
+
+> 데이터 검증과 데이터 직렬화는 다음과 같은 이유로 필요함
+>   > <b>데이터 검증</b> : 잘못된 데이터가 처리되는 것을 막아서 버그나 다양한 문제를 예방함     
+>   > <b>데이터 직렬화</b> : 서로 다른 시스템끼리 데이터를 쉽게 주고받을 수 있게 해줌       
+
+> 특히 FastAPI에서는 요청 바디로부터 데이터를 받기 위해 반드시 Pydantic 모델을 사용해야 하는 것은 아니지만, Pydantic 모델을 사용하는 것을 권장함    
+> 데이터 요청을 위해 자주 사용하는 HTTP POST 메서드는 데이터를 요청 바디에 넣어서 전송하므로, POST 메서드로 API를 선언하는 경우에는 Pydantic 모델 사용을 고려해야함     
+
+## Pydantic 모델 적용
+
+
+
+
